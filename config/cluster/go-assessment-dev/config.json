@@ -1,0 +1,11 @@
+{
+  "database": {
+    "username": "root",
+    "password": "password",
+    "host": "0.0.0.0",
+    "port": "1444"
+  },
+  "application": {
+    "port": "8080"
+  }
+}

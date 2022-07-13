@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  go-assessment-app:
+    container_name: ${DISQO_SERVICE_CONTAINER}
+    build:
+      context: ../
+      dockerfile: ./docker/go-assessment-app/Dockerfile
+    image: ${DISQO_SERVICE_IMAGE}
+    ports:
+      - "0.0.0.0:${DISQO_SERVICE_HOST_PORT}:${DISQO_SERVICE_INTERNAL_PORT}"
+    logging:
+      options:
+        max-size: "500k"
+        max-file: "2"
+    networks:
+      - go-assessment-network
+  go-assessment-mysql:
+    container_name: ${DISQO_MYSQL_CONTAINER}
+    build:
+      context: ../
+      dockerfile: ./docker/go-assessment-mysql/Dockerfile
+    restart: always
+    environment:
+      MYSQL_DATABASE: '${DISQO_MYSQL_DATABASE}'
+      MYSQL_ROOT_PASSWORD: '${DISQO_MYSQL_ROOT_PASSWORD}'
+    ports:
+      - "0.0.0.0:${DISQO_MYSQL_HOST_PORT}:${DISQO_MYSQL_INTERNAL_PORT}"
+    logging:
+      options:
+        max-size: "500k"
+        max-file: "2"
+    networks:
+      - go-assessment-network
+networks:
+  go-assessment-network:
+    driver: bridge
