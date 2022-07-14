@@ -32,8 +32,41 @@
 * Application is configured to run on port 8080
 
 ## Application Demo Instructions:
-* You can test the health-check endpoint by running **curl -i 0.0.0.0:8080/health-check**
-* If you have time, please fill this portion out.
+This application allows you to update, create, delete and get a user from the badass_db database. 
 
+* You can test the health-check endpoint by running **curl -i 0.0.0.0:8080/health-check**
+
+### Create a User
+To create a user, you will need to provide the first name and the last name of the user you want to create. 
+
+Example of the body you will need to pass when making a create user `POST` request: **0.0.0.0:8080/user**
+
+``` json
+{
+    "first_name": "test",
+    "last_name": "name"
+}
+
+```
+
+### Updating a user
+To update a user, you will need to have the id of the user as the a param and also pass the updated first name and the last name in the body. 
+
+Example of the body you wll need yo pass when making a update user `PATCH` request: **0.0.0.0:8080/user/{userId}**
+
+``` json
+{
+    "first_name": "updated first name",
+    "last_name": "updated last namme"
+}
+```
+
+### Deleting a User
+To delete a user, you will only need to pass the ID of the user as a parameter when making the `DELETE` request: **0.0.0.0:8080/user/{userId}**
+
+### Fetching a User
+To delete a user, you will only need to pass the ID of the user as a parameter when making the `GET` request: **0.0.0.0:8080/user/{userId}**
+
+**For more information about the api routes, check out the [swagger spec](./api/oas3.yml).**
 ## Other Notes:
 * Standard Go Directory Structure: https://github.com/golang-standards/project-layout
