@@ -1,11 +1,11 @@
 package app
 
 import (
-	"database/sql"
 	"encoding/json"
 	"go-assessment/internal/config"
+	"go-assessment/internal/userrepository"
+	"go-assessment/internal/web"
 	"io"
-	"log"
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -13,14 +13,10 @@ import (
 )
 
 type db interface {
-	Exec(query string, args ...any) (sql.Result, error)
-	QueryRow(query string, args ...any) *sql.Row
-}
-
-type User struct {
-	Id        string `json:"id"`
-	Firstname string `json:"first_name"`
-	Lastname  string `json:"last_name"`
+	GetUser(userId string) (userrepository.User, error)
+	DeleteUser(userId string) error
+	UpdateUser(user userrepository.User) error
+	CreateUser(firstName, lastName string) error
 }
 
 type App struct {
@@ -30,7 +26,6 @@ type App struct {
 
 // New creates a new App
 func New(cfg config.Config, db db) App {
-
 	app := App{
 		Config: &cfg,
 		DB:     db,
@@ -62,85 +57,76 @@ func (a *App) HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
-	var userData User
+	var userData userrepository.User
 
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Fatalln(err)
+		web.RespondError("error creating user: "+err.Error(), w, http.StatusBadRequest)
 	}
 
 	err = json.Unmarshal(b, &userData)
 	if err != nil {
-		panic(err.(any))
+		web.RespondError("error creating user: "+err.Error(), w, http.StatusBadRequest)
 	}
 
-	_, err = a.DB.Exec("INSERT INTO badass_users(first_name, last_name) VALUES(?,?)", userData.Firstname, userData.Lastname)
+	err = a.DB.CreateUser(userData.FirstName, userData.LastName)
 	if err != nil {
-		panic(err.(any))
+		web.RespondError("error creating user: "+err.Error(), w, http.StatusInternalServerError)
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	web.Respond(web.Response{Message: "user created successfully"}, w, http.StatusCreated)
 }
 
 func (a *App) UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
-	var userData User
+	var userData userrepository.User
 	params := mux.Vars(r)
 	userData.Id = params["userId"]
 
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Fatalln(err)
+		web.RespondError("error updating user: "+err.Error(), w, http.StatusBadRequest)
 	}
 
 	err = json.Unmarshal(b, &userData)
 	if err != nil {
-		panic(err.(any))
+		web.RespondError("error updating user: "+err.Error(), w, http.StatusBadRequest)
 	}
 
-	_, err = a.DB.Exec("UPDATE badass_users SET first_name=?, last_name=? WHERE id = ?", userData.Firstname, userData.Lastname, userData.Id)
+	err = a.DB.UpdateUser(userData)
 	if err != nil {
-		panic(err.(any))
+		web.RespondError("error updating user: "+err.Error(), w, http.StatusInternalServerError)
 	}
 
-	w.WriteHeader(http.StatusOK)
+	web.Respond(web.Response{Message: "user updated successfully"}, w, http.StatusOK)
 }
 
 func (a *App) GetUserHandler(w http.ResponseWriter, r *http.Request) {
-	var userData User
+	var userData userrepository.User
 	params := mux.Vars(r)
 	userData.Id = params["userId"]
 
-	row := a.DB.QueryRow("SELECT * FROM badass_users WHERE id = ?", userData.Id)
-
-	err := row.Scan(&userData.Id, &userData.Firstname, &userData.Lastname)
+	user, err := a.DB.GetUser(userData.Id)
 	if err != nil {
-		panic(err.(any))
+		web.RespondError("error getting user: "+err.Error(), w, http.StatusInternalServerError)
 	}
 
-	finalUserDate, err := json.Marshal(userData)
-	if err != nil {
-		panic(err.(any))
+	userResponse := web.DataResponse{
+		Data: []userrepository.User{user},
 	}
 
-	//w.Header().Set()
-	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(finalUserDate)
-	if err != nil {
-		panic(err.(any))
-	}
+	web.Respond(userResponse, w, http.StatusOK)
 }
 
 func (a *App) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
+	var userData userrepository.User
 
-	var userData User
 	params := mux.Vars(r)
 	userData.Id = params["userId"]
 
-	_, err := a.DB.Exec("DELETE FROM badass_users WHERE id = ?", userData.Id)
-
+	err := a.DB.DeleteUser(userData.Id)
 	if err != nil {
-		panic(err.(any))
+		web.RespondError("error deleting user: "+err.Error(), w, http.StatusInternalServerError)
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	web.Respond("user deleted successfully", w, http.StatusNoContent)
 }

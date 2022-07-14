@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	internalConfig "go-assessment/internal/config"
+	"go-assessment/internal/userrepository"
 	"log"
 	"net/http"
 	"os"
@@ -33,12 +34,16 @@ func Start() {
 
 	ctx := context.Background()
 
-	db, err := sql.Open("mysql", "root:password@tcp(0.0.0.0:1444)/badass_db")
+	dbEndpoint := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", cfg.Database.Username, cfg.Database.Password, cfg.Database.Host, cfg.Database.Port, cfg.Database.Name)
+	fmt.Println(dbEndpoint)
+	db, err := sql.Open("mysql", dbEndpoint)
 	if err != nil {
-
+		panic(err)
 	}
 
-	application := New(cfg, db)
+	userRepository := userrepository.New(db)
+
+	application := New(cfg, userRepository)
 
 	srv := &http.Server{
 		Addr: fmt.Sprintf("0.0.0.0:%s", cfg.Application.Port),
