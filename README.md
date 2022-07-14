@@ -64,8 +64,12 @@ Example of the body you wll need yo pass when making a update user `PATCH` reque
 ### Deleting a User
 To delete a user, you will only need to pass the ID of the user as a parameter when making the `DELETE` request: **0.0.0.0:8080/user/{userId}**
 
+ curl -i 0.0.0.0:8080/user/5
+
 ### Fetching a User
 To delete a user, you will only need to pass the ID of the user as a parameter when making the `GET` request: **0.0.0.0:8080/user/{userId}**
+
+**curl -i 0.0.0.0:8080/user/5** 
 
 **For more information about the api routes, check out the [swagger spec](./api/oas3.yml).**
 ## Other Notes:
