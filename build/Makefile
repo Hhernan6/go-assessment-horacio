@@ -70,3 +70,6 @@ kill:
 heart_beat:
 	@cd ../sql-setup; \
 	go run .
+
+test: 
+	go test -cover ../internal/...
