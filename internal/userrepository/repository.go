@@ -15,7 +15,7 @@ func (c *Client) GetUser(userId string) (User, error) {
 
 	row := c.DB.QueryRow("SELECT * FROM badass_users WHERE id = ?", userId)
 
-	err := row.Scan(&user)
+	err := row.Scan(&user.Id, &user.FirstName, &user.LastName)
 	if err != nil {
 		return User{}, fmt.Errorf("error getting user %s: %w", userId, err)
 	}
@@ -51,4 +51,10 @@ func (c *Client) CreateUser(firstName, lastName string) error {
 	}
 
 	return nil
+}
+
+func New(db *sql.DB) *Client {
+	return &Client{
+		DB: db,
+	}
 }

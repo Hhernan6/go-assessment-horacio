@@ -3,7 +3,8 @@
     "username": "root",
     "password": "password",
     "host": "0.0.0.0",
-    "port": "1444"
+    "port": "1444",
+    "name": "badass_db"
   },
   "application": {
     "port": "8080"

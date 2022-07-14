@@ -5,11 +5,6 @@ import (
 	"net/http"
 )
 
-type Response struct {
-	Error   string `json:"error"`
-	Message string `json:"message"`
-}
-
 // Respond will setup the response with the data provided
 func Respond(message interface{}, w http.ResponseWriter, statusCode int) {
 	jsonResp, err := json.Marshal(message)
